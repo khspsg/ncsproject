@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.naver.jaebee2002.service.PayDao">
+	<resultMap type="com.naver.jaebee2002.entities.Pay" id="memberMap">
+	</resultMap>
+	<select id="selectAll" parameterType="hashMap" resultMap="memberMap">
+		select seq,vendcode,yyyy,mm,dd,no,hang,amount,B.name vendname, payway, sum(amount) total, memo from payment A, vender B 
+		where vendcode = #{vendcode} and yyyy = #{yyyy} and mm = #{mm} and dd = #{dd}
+		and A.vendcode = B.code group by no, hang with rollup
+	</select>
+	<select id="selectSequenceNo" parameterType="hashMap" resultType="Integer">
+		select ifnull(max(no)+1,1) from payment where vendcode = #{vendcode} and yyyy = #{yyyy} and mm = #{mm} and dd = #{dd}
+	</select>
+	<insert id="insertRow" parameterType="hashMap">
+		insert into payment (seq, vendcode, yyyy, mm, dd, no, hang, amount, payway, memo)
+		values((select ifnull(max(seq)+1,1) from payment alias_pay), #{vendcode, jdbcType=VARCHAR}, #{yyyy, jdbcType=VARCHAR}, #{mm, jdbcType=VARCHAR},
+		#{dd, jdbcType=VARCHAR}, #{no, jdbcType=INTEGER}, #{hang, jdbcType=INTEGER}, #{amount, jdbcType=VARCHAR}, 
+		#{payway, jdbcType=INTEGER}, #{memo, jdbcType=VARCHAR})
+	</insert>
+	<select id="selectPaySearch" parameterType="hashMap" resultMap="memberMap">
+		select seq,vendcode,yyyy,mm,dd,no,hang,amount,B.name vendname, payway, sum(amount) total, memo from payment A, vender B 
+		where vendcode = #{vendcode} and yyyy = #{yyyy} and mm = #{mm}
+		and A.vendcode = B.code group by mm, dd, no, hang with rollup
+	</select>
+	<select id="selectRow" parameterType="int" resultMap="memberMap">
+		select * from payment where seq = #{seq}
+	</select>
+	<update id="updateRow" parameterType="hashMap">
+		update payment set amount=#{amount},payway=#{payway},memo=#{memo} where seq=#{seq}
+	</update>
+	<delete id="deleteRow" parameterType="hashMap">
+		delete from payment where seq=#{seq}
+	</delete>
+</mapper>
